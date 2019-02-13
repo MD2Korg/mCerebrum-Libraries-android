@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.md2k.mcerebrum.library.datakit">
+    package="org.md2k.library.datakit">
 
     <application>
         <service
@@ -7,7 +7,7 @@
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="org.md2k.mcerebrum.library.datakit.server" />
+                <action android:name="org.md2k.library.datakit.server" />
             </intent-filter>
 
         </service>
