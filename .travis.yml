@@ -18,7 +18,11 @@ licenses:
 before_install:
 - yes | sdkmanager "platforms;android-27"
 - git clone https://github.com/MD2Korg/mCerebrum-API-android.git /home/travis/build/MD2Korg/mCerebrum-API-android
-
+env:
+  - TEST_DIR=libraries/phonesensor
+  - TEST_DIR=libraries/cerebralcortex
+  - TEST_DIR=libraries/datakit
+  - TEST_DIR=libraries/samsungwatch
 android:
   components:
   - tools
@@ -30,5 +34,4 @@ android:
   - extra-android-m2repository
 
 script:
-- cd phonesensor
-- "./gradlew assembleRelease"
+- cd @TEST_DIR && "./gradlew assembleRelease"
