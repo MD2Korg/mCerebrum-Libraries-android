@@ -34,4 +34,4 @@ android:
   - extra-android-m2repository
 
 script:
-- cd @TEST_DIR && "./gradlew assembleRelease"
+- cd $TEST_DIR && "./gradlew assembleRelease"
