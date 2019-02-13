@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="20dp"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <include android:id="@+id/accelerometer" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/accelerometer_linear" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/accelerometer_uncalibrated" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/gyroscope" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/gyroscope_uncalibrated" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/gravity" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/rotation_vector" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/magnetometer" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/magnetometer_uncalibrated" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/proximity" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/significant_motion" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/humidity" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/air_pressure" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/ambient_light" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/ambient_temperature" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/activity_type" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/gps_status" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/bluetooth_status" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/location" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/battery" layout="@layout/sensor_layout"/>
+        <include android:id="@+id/battery_details" layout="@layout/sensor_layout"/>
+<!--
+        <include android:id="@+id/weather" layout="@layout/sensor_layout"/>
+-->
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,40 @@
+{
+  "sensors": [
+    {
+      "sensorType": "ACCELEROMETER",
+      "readFrequency": 16,
+      "readTimeUnit":"SECONDS",
+      "writeType": "FIXED",
+      "writeFrequency": 16,
+      "writeTimeUnit":"SECONDS"
+    },
+    {
+      "sensorType": "GYROSCOPE",
+      "readFrequency": 160,
+      "readTimeUnit":"MINUTES",
+      "writeType": "ON_CHANGE",
+      "writeOnChangeType":"NOT_EQUAL",
+      "writeOnChangeValue":0.01,
+      "writeOnChange": 160,
+      "writeTimeUnit":"MINUTES"
+    },
+    {
+      "sensorType": "ACTIVITY_TYPE",
+      "readFrequency": 1,
+      "readTimeUnit":"SECONDS",
+      "writeType": "AS_RECEIVED"
+    },
+    {
+      "sensorType": "BATTERY",
+      "writeType": "ON_CHANGE",
+      "writeOnChangeType": "NOT_EQUAL"
+    },
+    {
+      "sensorType": "LOCATION",
+      "readFrequency": 1,
+      "readTimeUnit":"SECONDS",
+      "writeType": "AS_RECEIVED"
+    }
+
+  ]
+}

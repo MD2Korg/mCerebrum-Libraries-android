@@ -1,0 +1,64 @@
+apply plugin: 'com.android.library'
+apply from: 'versioning.gradle'
+apply plugin: 'com.novoda.bintray-release' // must be applied after your artifact generating plugin (eg. java / com.android.library)
+
+version = '0.0.1-snapshot'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.novoda:bintray-release:0.9'
+    }
+}
+publish {
+    userOrg = 'md2korg'
+    repoName = 'mCerebrum-PhoneSensorLibrary-android'
+    groupId = 'org.md2k.library.phonesensor'
+    artifactId = 'phonesensorlibrary'
+    publishVersion = version
+    desc = 'Library to collect phone sensor data'
+    website = 'https://github.com/MD2Korg/mCerebrum-PhoneSensorLibrary-android'
+}
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 28
+        versionCode buildVersionCode()
+        versionName version
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            libraryVariants.all { variant ->
+                variant.outputs.all { output ->
+                    if (outputFile != null && outputFileName.endsWith('.aar')) {
+                        outputFileName = "${archivesBaseName}-${version}.aar"
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.karumi:dexter:5.0.0'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'pl.charmas.android:android-reactive-location2:2.1@aar'
+    implementation 'com.google.android.gms:play-services-location:16.0.0'
+    implementation 'com.google.android.gms:play-services-places:16.0.0'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.5' //you can override RxJava version if you need
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
+    implementation project(':core')
+
+    //weather
+//    implementation 'com.github.KwabenBerko:OpenWeatherMap-Android-Library:2.0.1'
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
+}

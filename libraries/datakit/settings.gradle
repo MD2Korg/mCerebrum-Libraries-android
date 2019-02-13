@@ -1,0 +1,4 @@
+include ':sample', ':datakit'
+include ':core'
+project(':core').projectDir=new File('../mCerebrum-API-android/core')
+
