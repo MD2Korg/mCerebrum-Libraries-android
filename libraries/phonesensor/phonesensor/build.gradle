@@ -15,7 +15,7 @@ buildscript {
 publish {
     userOrg = 'md2korg'
     repoName = 'mCerebrum-PhoneSensorLibrary-android'
-    groupId = 'org.md2k.library.phonesensor'
+    groupId = 'org.md2k.phonesensor'
     artifactId = 'phonesensorlibrary'
     publishVersion = version
     desc = 'Library to collect phone sensor data'

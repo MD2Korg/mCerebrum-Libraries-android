@@ -77,7 +77,7 @@ An android library that records sensor events.
 The first step is to include mCerebrumAPI into your project for example, as a gradle compile dependency:
 
 ```groovy
-implementation "org.md2k.mcerebrum.library:phonesensor:<latest_version>"
+implementation "org.md2k.library:phonesensor:<latest_version>"
 ```
 (Please replace `<latest_version>` with this: [ ![Download](https://api.bintray.com/packages/md2korg/mCerebrum/core/images/download.svg) ](https://bintray.com/md2korg/mCerebrum/core/_latestVersion)
 )

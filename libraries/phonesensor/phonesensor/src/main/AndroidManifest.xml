@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.md2k.mcerebrum.library.phonesensor">
+    package="org.md2k.phonesensor">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -14,7 +14,7 @@
 
     <application>
         <activity
-            android:name="org.md2k.library.phonesensor.enable.EnablerActivity"
+            android:name="org.md2k.phonesensor.enable.EnablerActivity"
             android:theme="@style/Dexter.Internal.Theme.Transparent" />
     </application>
 

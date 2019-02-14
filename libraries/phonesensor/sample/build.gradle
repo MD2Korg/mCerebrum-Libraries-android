@@ -6,7 +6,7 @@ android {
 
 
     defaultConfig {
-        applicationId "org.md2k.mcerebrum.sample"
+        applicationId "org.md2k.library.mcerebrum.sample"
         minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
