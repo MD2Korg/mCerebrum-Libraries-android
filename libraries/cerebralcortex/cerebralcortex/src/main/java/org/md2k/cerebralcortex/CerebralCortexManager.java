@@ -42,6 +42,7 @@ import org.md2k.cerebralcortex.exception.MCExceptionNotLoggedIn;
 import org.md2k.cerebralcortex.exception.MCExceptionServerDown;
 import org.md2k.mcerebrumapi.core.data.MCData;
 import org.md2k.mcerebrumapi.core.datakitapi.datasource.DataSource;
+import org.md2k.mcerebrumapi.core.datakitapi.datasource.DataSourceResult;
 import org.md2k.mcerebrumapi.core.exception.MCException;
 
 import java.io.File;
@@ -82,12 +83,10 @@ public class CerebralCortexManager {
                     ServerInfo.setAccessToken(authResponse.getAccessToken());
                     ServerInfo.setLoggedIn(true);
                     cerebralCortexCallback.onSuccess(true);
-                } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
-                    cerebralCortexCallback.onError(mcExceptionInternetConnection);
-                } catch (MCExceptionServerDown mcExceptionServerDown) {
-                    cerebralCortexCallback.onError(mcExceptionServerDown);
-                } catch (MCExceptionInvalidLogin mcExceptionInvalidLogin) {
-                    cerebralCortexCallback.onError(mcExceptionInvalidLogin);
+                } catch (MCException mcException) {
+                    cerebralCortexCallback.onError(mcException);
+                } catch (Exception e) {
+                    cerebralCortexCallback.onError(new MCException(e.getMessage()));
                 }
             }
         }).start();
@@ -113,9 +112,8 @@ public class CerebralCortexManager {
                     ArrayList<FileInfo> list = new ArrayList<>();
                     CerebralCortexWebApi ccService = ApiUtils.getCCService(ServerInfo.getServerAddress());
                     CCWebAPICalls ccWebAPICalls = new CCWebAPICalls(ccService);
-                    AuthResponse authResponse = ccWebAPICalls.authenticateUser(ServerInfo.getUserName(), ServerInfo.getUserName());
-                    if (authResponse == null) throw new MCExceptionInvalidLogin();
-                    List<MinioObjectStats> objectList = ccWebAPICalls.getObjectsInBucket(authResponse.getAccessToken(), "configuration");
+
+                    List<MinioObjectStats> objectList = ccWebAPICalls.getObjectsInBucket(ServerInfo.getAccessToken(), "configuration");
                     for (int i = 0; objectList != null && i < objectList.size(); i++) {
                         FileInfo f = new FileInfo();
                         f.setName(objectList.get(i).getObjectName());
@@ -128,8 +126,6 @@ public class CerebralCortexManager {
                     cerebralCortexCallback.onError(mcExceptionInternetConnection);
                 } catch (MCExceptionServerDown mcExceptionServerDown) {
                     cerebralCortexCallback.onError(mcExceptionServerDown);
-                } catch (MCExceptionInvalidLogin mcExceptionInvalidLogin) {
-                    cerebralCortexCallback.onError(mcExceptionInvalidLogin);
                 } catch (MCExceptionNotLoggedIn mcExceptionNotLoggedIn) {
                     cerebralCortexCallback.onError(mcExceptionNotLoggedIn);
                 } catch (Exception e) {
@@ -147,7 +143,10 @@ public class CerebralCortexManager {
             public void onSuccess(Object obj) {
                 ArrayList<FileInfo> fileInfos = (ArrayList<FileInfo>) obj;
                 for (int i = 0; i < fileInfos.size(); i++) {
-                    if (fileInfos.get(i).getName().equals(fileName)) cerebralCortexCallback.onSuccess(fileInfos.get(i));
+                    if (fileInfos.get(i).getName().equals(fileName)) {
+                        cerebralCortexCallback.onSuccess(fileInfos.get(i));
+                        return;
+                    }
                 }
                 cerebralCortexCallback.onError(new MCExceptionConfigNotFound());
             }
@@ -176,13 +175,11 @@ public class CerebralCortexManager {
                     file.mkdirs();
                     CerebralCortexWebApi ccService = ApiUtils.getCCService(ServerInfo.getServerAddress());
                     final CCWebAPICalls ccWebAPICalls = new CCWebAPICalls(ccService);
-                    final AuthResponse authResponse = ccWebAPICalls.authenticateUser(ServerInfo.getUserName(), ServerInfo.getPassword());
-                    if (authResponse == null) throw new MCExceptionInvalidLogin();
                     getConfigurationFile(filename, new CerebralCortexCallback() {
                         @Override
                         public void onSuccess(Object obj) {
                             FileInfo fileInfo = (FileInfo) obj;
-                            boolean res = ccWebAPICalls.downloadMinioObject(authResponse.getAccessToken(), "configuration", filename, tempFileDir, filename);
+                            boolean res = ccWebAPICalls.downloadMinioObject(ServerInfo.getAccessToken(), "configuration", filename, tempFileDir, filename);
                             if (!res) cerebralCortexCallback.onError(new MCExceptionConfigNotFound());
                             // ZipUtils.unzipFile(tempFileDir+File.separator+fileInfo.getName(), configFileDir);
                             ServerInfo.setFileName(fileInfo.getName());
@@ -201,8 +198,8 @@ public class CerebralCortexManager {
                     cerebralCortexCallback.onError(mcExceptionNotLoggedIn);
                 } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
                     cerebralCortexCallback.onError(mcExceptionInternetConnection);
-                } catch (MCExceptionInvalidLogin mcExceptionInvalidLogin) {
-                    cerebralCortexCallback.onError(mcExceptionInvalidLogin);
+                }  catch (Exception e){
+                    cerebralCortexCallback.onError(new MCException(e.getMessage()));
                 }
             }
         }).start();
@@ -260,11 +257,17 @@ public class CerebralCortexManager {
         }
     }
 
-    private void checkLoginStatus() throws MCExceptionNotLoggedIn {
+    private void checkLoginStatus() throws MCExceptionNotLoggedIn, MCExceptionInvalidLogin {
         if (!isLoggedIn()) throw new MCExceptionNotLoggedIn();
+        CerebralCortexWebApi ccService = ApiUtils.getCCService(ServerInfo.getServerAddress());
+        CCWebAPICalls ccWebAPICalls = new CCWebAPICalls(ccService);
+        AuthResponse authResponse = ccWebAPICalls.authenticateUser(ServerInfo.getUserName(), ServerInfo.getPassword());
+        if (authResponse == null) throw new MCExceptionInvalidLogin();
+        ServerInfo.setAccessToken(authResponse.getAccessToken());
+        ServerInfo.setLoggedIn(true);
     }
 
-    public void uploadData(DataSource dataSource, ArrayList<MCData> data, final CerebralCortexCallback cerebralCortexCallback){
+    public void uploadData(DataSourceResult dataSourceResult, ArrayList<MCData> data, final CerebralCortexCallback cerebralCortexCallback){
         new Thread(new Runnable() {
             @Override
             public void run() {

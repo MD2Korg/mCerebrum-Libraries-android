@@ -1,10 +1,12 @@
 package org.md2k.cerebralcortex;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 
 import org.md2k.mcerebrumapi.core.data.MCValue;
 import org.md2k.mcerebrumapi.core.extensionapi.library.ExtensionCallback;
+import org.md2k.mcerebrumapi.core.extensionapi.library.IPermissionInterface;
 import org.md2k.mcerebrumapi.core.extensionapi.library.MCAction;
 import org.md2k.mcerebrumapi.core.extensionapi.library.MCExtensionAPILibrary;
 
@@ -49,6 +51,8 @@ public class CerebralCortexExtension {
                 .setIcon(null)
                 .setVersion(org.md2k.cerebralcortex.BuildConfig.VERSION_CODE, org.md2k.cerebralcortex.BuildConfig.VERSION_NAME)
                 .setPermissionList(permissions)
+                .noConfiguration()
+
 /*
                 .addAction(LOGIN, "Login", "Login to cerebral cortex", new MCAction() {
                     @Override

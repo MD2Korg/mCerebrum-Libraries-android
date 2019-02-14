@@ -1,29 +1,31 @@
 package org.md2k.cerebralcortex;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import androidx.core.content.ContextCompat;
+import android.os.Build;
+import android.util.Log;
+
+import com.orhanobut.hawk.Hawk;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.md2k.cerebralcortex.exception.MCExceptionConfigNotFound;
-import org.md2k.cerebralcortex.exception.MCExceptionInternetConnection;
-import org.md2k.cerebralcortex.exception.MCExceptionNotLoggedIn;
+import org.md2k.cerebralcortex.exception.MCExceptionInvalidLogin;
 import org.md2k.cerebralcortex.exception.MCExceptionServerDown;
+import org.md2k.mcerebrumapi.core.exception.MCException;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static androidx.test.InstrumentationRegistry.getTargetContext;
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
+import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /*
  * Copyright (c) 2016, The University of Memphis, MD2K Center
@@ -53,21 +55,12 @@ import static org.junit.Assert.fail;
  */
 public class CerebralCortexManagerTest {
     private Context context;
-    @Test
-    public void checkPermissions(){
-        int a = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_NETWORK_STATE);
-        int b = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_WIFI_STATE);
-        int c = ContextCompat.checkSelfPermission(context, Manifest.permission.INTERNET);
-        assertEquals(a, PackageManager.PERMISSION_GRANTED);
-        assertEquals(b, PackageManager.PERMISSION_GRANTED);
-        assertEquals(c, PackageManager.PERMISSION_GRANTED);
-    }
 
     @Before
     public void setUp() throws Exception {
         context = getTargetContext().getApplicationContext();
-    }
 
+    }
     @After
     public void tearDown() throws Exception {
     }
@@ -87,101 +80,158 @@ public class CerebralCortexManagerTest {
 
     @Test
     public void checkValidLogin(){
+        final CountDownLatch latch = new CountDownLatch(1);
 
         String server = "https://odin.md2k.org";
         String userName = "smh";
         String password = convertSHA("8b2efjwp");
+
 //        String password = ("8b2efjwp");
+            CerebralCortexManager.getInstance(context).login(server, userName, password, new CerebralCortexCallback() {
+                @Override
+                public void onSuccess(Object obj) {
+                    assertTrue(true);
+                    latch.countDown();
+
+                }
+
+                @Override
+                public void onError(MCException exception) {
+                    Assert.fail();
+                    latch.countDown();
+
+                }
+            });
         try {
-            boolean result = CerebralCortexManager.getInstance(context).login(server, userName, password);
-            assertTrue(result);
-        } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
+            latch.await(10000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
             fail();
-            mcExceptionInternetConnection.printStackTrace();
-        } catch (MCExceptionServerDown mcExceptionServerDown) {
-            fail();
-            mcExceptionServerDown.printStackTrace();
         }
+
     }
+
     @Test
     public void downloadConfigFile(){
-        String server = "https://odin.md2k.org";
-        String userName = "smh";
-        String password = convertSHA("8b2efjwp");
-        String fileName = "memphis-stress-test.zip";
-//        String password = ("8b2efjwp");
+        final CountDownLatch latch = new CountDownLatch(1);
+        Hawk.init(context).build();
+        ServerInfo.setServerAddress("https://odin.md2k.org");
+        ServerInfo.setUserName("smh");
+        ServerInfo.setPassword(convertSHA("8b2efjwp"));
+        ServerInfo.setLoggedIn(true);
+        String fileName = "decisions.zip";
+
+        CerebralCortexManager.getInstance(context).downloadConfigurationFile(fileName, new CerebralCortexCallback() {
+                @Override
+                public void onSuccess(Object obj) {
+                    assertTrue(true);
+                    latch.countDown();
+                }
+
+                @Override
+                public void onError(MCException exception) {
+                    Log.d("abc","exception="+exception.getMessage());
+                    fail();
+                    latch.countDown();
+                }
+            });
         try {
-            boolean result = CerebralCortexManager.getInstance(context).login(server, userName, password);
-            assertTrue(result);
-            boolean b = CerebralCortexManager.getInstance(context).downloadConfigurationFile(fileName);
-            assertTrue(b);
-        } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
-            fail();
-            mcExceptionInternetConnection.printStackTrace();
-        } catch (MCExceptionServerDown mcExceptionServerDown) {
-            fail();
-            mcExceptionServerDown.printStackTrace();
-        } catch (MCExceptionNotLoggedIn mcExceptionNotLoggedIn) {
-            fail();
-        } catch (MCExceptionConfigNotFound mcExceptionConfigNotFound) {
+            latch.await(50000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
             fail();
         }
+
     }
 
     @Test
     public void getConfigFiles(){
-        String server = "https://odin.md2k.org";
-        String userName = "smh";
-        String password = convertSHA("8b2efjwp");
-//        String password = ("8b2efjwp");
+        final CountDownLatch latch = new CountDownLatch(1);
+        Hawk.init(context).build();
+        ServerInfo.setServerAddress("https://odin.md2k.org");
+        ServerInfo.setUserName("smh");
+        ServerInfo.setPassword(convertSHA("8b2efjwp"));
+        ServerInfo.setLoggedIn(true);
+            CerebralCortexManager.getInstance(context).getConfigurationFiles(new CerebralCortexCallback() {
+                @Override
+                public void onSuccess(Object obj) {
+                    ArrayList<FileInfo> files = (ArrayList<FileInfo>) obj;
+                    assertEquals(files.size(), 3);
+                    latch.countDown();
+                }
+
+                @Override
+                public void onError(MCException exception) {
+                    fail();
+                    latch.countDown();
+                }
+            });
         try {
-            boolean result = CerebralCortexManager.getInstance(context).login(server, userName, password);
-            assertTrue(result);
-            ArrayList<FileInfo> fileInfoArrayList = CerebralCortexManager.getInstance(context).getConfigurationFiles();
-            assertEquals(fileInfoArrayList.size(), 2);
-        } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
-            fail();
-            mcExceptionInternetConnection.printStackTrace();
-        } catch (MCExceptionServerDown mcExceptionServerDown) {
-            fail();
-            mcExceptionServerDown.printStackTrace();
-        } catch (MCExceptionNotLoggedIn mcExceptionNotLoggedIn) {
+            latch.await(50000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
             fail();
         }
+
     }
 
     @Test
     public void checkInvalidURL(){
+        final CountDownLatch latch = new CountDownLatch(1);
+        Hawk.init(context).build();
+        ServerInfo.setPassword(convertSHA("8b2efjwp"));
 
         String server = "https://abc.abc";
         String userName = "smh";
         String password = convertSHA("8b2efjwp");
 //        String password = ("8b2efjwp");
+            CerebralCortexManager.getInstance(context).login(server, userName, password, new CerebralCortexCallback() {
+                @Override
+                public void onSuccess(Object obj) {
+                    fail();
+                    latch.countDown();
+                }
+
+                @Override
+                public void onError(MCException exception) {
+                    if(exception instanceof MCExceptionServerDown)
+                        assertTrue(true);
+                    else fail();
+                    latch.countDown();
+                }
+            });
         try {
-            boolean result = CerebralCortexManager.getInstance(context).login(server, userName, password);
-            assertFalse(result);
-        } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
+            latch.await(50000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
             fail();
-            mcExceptionInternetConnection.printStackTrace();
-        } catch (MCExceptionServerDown mcExceptionServerDown) {
-            assertTrue(true);
         }
+
     }
+
     @Test
     public void checkInvalidPassword(){
+        final CountDownLatch latch = new CountDownLatch(1);
+        Hawk.init(context).build();
 
         String server = "https://odin.md2k.org";
         String userName = "smh";
-        String password = convertSHA("8b2efjwpa");
-//        String password = ("8b2efjwp");
+        String password = convertSHA("abc");
+            CerebralCortexManager.getInstance(context).login(server, userName, password, new CerebralCortexCallback() {
+                @Override
+                public void onSuccess(Object obj) {
+                    fail();
+                    latch.countDown();
+                }
+
+                @Override
+                public void onError(MCException exception) {
+                    if(exception instanceof MCExceptionInvalidLogin)
+                    assertTrue(true);
+                    else fail();
+                    latch.countDown();
+                }
+            });
         try {
-            boolean result = CerebralCortexManager.getInstance(context).login(server, userName, password);
-            assertFalse(result);
-        } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
-            fail();
-        } catch (MCExceptionServerDown mcExceptionServerDown) {
+            latch.await(50000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
             fail();
         }
     }
-
 }
