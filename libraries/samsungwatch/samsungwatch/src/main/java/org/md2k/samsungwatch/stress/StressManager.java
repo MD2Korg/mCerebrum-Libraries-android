@@ -1,4 +1,4 @@
-package org.md2k.mcerebrum.library.samsungwatch.stress;
+package org.md2k.samsungwatch.stress;
 
 import android.content.Context;
 import android.os.Environment;
@@ -7,9 +7,9 @@ import android.util.Log;
 import com.blankj.utilcode.util.FileIOUtils;
 import com.blankj.utilcode.util.FileUtils;
 
-import org.md2k.mcerebrum.library.samsungwatch.DataCallback;
-import org.md2k.mcerebrum.library.samsungwatch.MySharedPreference;
-import org.md2k.mcerebrum.library.samsungwatch.SensorType;
+import org.md2k.samsungwatch.DataCallback;
+import org.md2k.samsungwatch.MySharedPreference;
+import org.md2k.samsungwatch.SensorType;
 
 import java.io.File;
 import java.text.ParseException;

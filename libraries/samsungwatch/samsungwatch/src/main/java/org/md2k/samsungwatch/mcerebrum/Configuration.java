@@ -1,4 +1,4 @@
-package org.md2k.mcerebrum.library.samsungwatch.stress;
+package org.md2k.samsungwatch.mcerebrum;
 
 /*
  * Copyright (c) 2016, The University of Memphis, MD2K Center
@@ -26,24 +26,9 @@ package org.md2k.mcerebrum.library.samsungwatch.stress;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class StressData implements Comparable<StressData>{
-    double score;
-    long end_time;
-    String binning_data;
-    long start_time;
-    String deviceuuid;
-    long update_time;
-    double min;
-    double max;
-    String pkg_name;
-    String time_offset;
-    String tag_id;
-    String custom;
-    String comment;
-    String datauuid;
-    String algorithm;
-    long create_time;
-    public int compareTo(StressData other) {
-        return Long.compare(create_time, other.create_time);
-    }
+public class Configuration {
+    private long syncTime;
+    private boolean heartRate;
+    private boolean rrInterval;
+    private boolean stress;
 }

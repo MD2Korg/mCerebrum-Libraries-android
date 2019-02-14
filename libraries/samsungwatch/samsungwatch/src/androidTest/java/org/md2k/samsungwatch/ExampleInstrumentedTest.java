@@ -1,4 +1,4 @@
-package org.md2k.mcerebrum.library.samsungwatch;
+package org.md2k.samsungwatch;
 
 import android.content.Context;
 import androidx.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("org.md2k.mcerebrum.library.samsungwatch.test", appContext.getPackageName());
+        assertEquals("org.md2k.samsungwatch.test", appContext.getPackageName());
     }
 }

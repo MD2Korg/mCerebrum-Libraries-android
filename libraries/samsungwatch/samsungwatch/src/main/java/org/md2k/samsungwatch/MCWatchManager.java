@@ -1,9 +1,8 @@
-package org.md2k.mcerebrum.library.samsungwatch;
+package org.md2k.samsungwatch;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
-import static android.content.Context.MODE_PRIVATE;
+import org.md2k.samsungwatch.stress.StressManager;
 
 /*
  * Copyright (c) 2016, The University of Memphis, MD2K Center
@@ -31,22 +30,25 @@ import static android.content.Context.MODE_PRIVATE;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class MySharedPreference {
-    private static final String PREF_NAME="SAMSUNG_WATCH";
-    private static final String KEY_NAME="LAST_STRESS_DATA_SYNC_TIME";
-    public static void setLastSyncedTimestamp(Context context, long timestamp){
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit();
-        editor.putLong(KEY_NAME, timestamp);
-        editor.apply();
-    }
-    public static long getLastSyncedTimestamp(Context context) {
-        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, MODE_PRIVATE);
-        return prefs.getLong(KEY_NAME, 0);
-    }
-    public static void clear(Context context) {
-        SharedPreferences.Editor editor = context.getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit();
-        editor.clear();
-        editor.apply();
+public class MCWatchManager {
+    private static MCWatchManager instance;
+    private Context context;
+    StressManager stressManager;
+
+    public static MCWatchManager getInstance(Context context) {
+        if (instance == null)
+            instance = new MCWatchManager(context.getApplicationContext());
+        return instance;
     }
 
+    private MCWatchManager(Context context) {
+        this.context = context;
+        stressManager=new StressManager();
+    }
+    void clearInternalState(){
+        MySharedPreference.clear(context);
+    }
+    void readStress(DataCallback dataCallback){
+        stressManager.readFromSDCard(context, dataCallback);
+    }
 }

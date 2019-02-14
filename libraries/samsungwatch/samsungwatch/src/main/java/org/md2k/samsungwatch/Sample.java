@@ -1,10 +1,4 @@
-package org.md2k.mcerebrum.library.samsungwatch;
-
-import android.content.Context;
-
-import org.md2k.mcerebrum.library.samsungwatch.stress.StressManager;
-
-import java.util.ArrayList;
+package org.md2k.samsungwatch;
 
 /*
  * Copyright (c) 2016, The University of Memphis, MD2K Center
@@ -32,25 +26,9 @@ import java.util.ArrayList;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class MCWatchManager {
-    private static MCWatchManager instance;
-    private Context context;
-    StressManager stressManager;
-
-    public static MCWatchManager getInstance(Context context) {
-        if (instance == null)
-            instance = new MCWatchManager(context.getApplicationContext());
-        return instance;
-    }
-
-    private MCWatchManager(Context context) {
-        this.context = context;
-        stressManager=new StressManager();
-    }
-    void clearInternalState(){
-        MySharedPreference.clear(context);
-    }
-    void readStress(DataCallback dataCallback){
-        stressManager.readFromSDCard(context, dataCallback);
-    }
+public class Sample {
+    long timestamp;
+    int HR;
+    int RRI;
+    long id;
 }

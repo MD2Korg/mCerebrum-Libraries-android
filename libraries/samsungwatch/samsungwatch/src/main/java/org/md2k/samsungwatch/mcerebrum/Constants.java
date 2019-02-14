@@ -1,4 +1,4 @@
-package org.md2k.mcerebrum.library.samsungwatch;
+package org.md2k.samsungwatch.mcerebrum;
 
 /*
  * Copyright (c) 2016, The University of Memphis, MD2K Center
@@ -26,8 +26,10 @@ package org.md2k.mcerebrum.library.samsungwatch;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public enum SensorType {
-    HEART_RATE,
-    RR_INTERVAL,
-    STRESS
+class Constants {
+    protected static final String ID = org.md2k.samsungwatch.BuildConfig.APPLICATION_ID;
+    protected static final String NAME = "Samsung Watch";
+    protected static final String DESCRIPTION = "Library for collecting data from samsung watch";
+    protected static final int VERSION_CODE = org.md2k.samsungwatch.BuildConfig.VERSION_CODE;
+    protected static final String VERSION_NAME = org.md2k.samsungwatch.BuildConfig.VERSION_NAME;
 }

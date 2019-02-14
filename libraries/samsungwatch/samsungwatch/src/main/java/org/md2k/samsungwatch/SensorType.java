@@ -1,4 +1,4 @@
-package org.md2k.mcerebrum.library.samsungwatch.mcerebrum;
+package org.md2k.samsungwatch;
 
 /*
  * Copyright (c) 2016, The University of Memphis, MD2K Center
@@ -26,9 +26,8 @@ package org.md2k.mcerebrum.library.samsungwatch.mcerebrum;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public class Configuration {
-    private long syncTime;
-    private boolean heartRate;
-    private boolean rrInterval;
-    private boolean stress;
+public enum SensorType {
+    HEART_RATE,
+    RR_INTERVAL,
+    STRESS
 }

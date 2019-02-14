@@ -1,6 +1,11 @@
-package org.md2k.mcerebrum.library.samsungwatch;
+package org.md2k.samsungwatch.mcerebrum;
 
-import java.util.ArrayList;
+import android.Manifest;
+import android.content.Context;
+
+
+import org.md2k.mcerebrumapi.core.extensionapi.library.IPermissionList;
+import org.md2k.mcerebrumapi.core.extensionapi.library.MCExtensionAPILibrary;
 
 /*
  * Copyright (c) 2016, The University of Memphis, MD2K Center
@@ -28,6 +33,21 @@ import java.util.ArrayList;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface DataCallback {
-    void onReceived(SensorType sensorType, ArrayList<Object> data);
+public class SamsungWatchExtension {
+    private static String[] permissions= new String[]{
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_ADMIN,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
+    public static MCExtensionAPILibrary createExtensionAPI(final Context context) {
+        return MCExtensionAPILibrary.builder()
+                .setId(Constants.ID)
+                .setName(Constants.NAME)
+                .setDescription(Constants.DESCRIPTION)
+                .setIcon(null)
+                .setVersion(Constants.VERSION_CODE, Constants.VERSION_NAME)
+                .setPermissionList(permissions)
+                .build();
+    }
 }

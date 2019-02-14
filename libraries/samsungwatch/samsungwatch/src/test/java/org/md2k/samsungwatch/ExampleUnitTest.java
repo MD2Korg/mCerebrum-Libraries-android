@@ -1,4 +1,4 @@
-package org.md2k.mcerebrum.library.samsungwatch;
+package org.md2k.samsungwatch;
 
 import org.junit.Test;
 

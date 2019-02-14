@@ -21,7 +21,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.md2k.mcerebrum.library.samsungwatch;
+package org.md2k.samsungwatch;
 
 import android.content.Intent;
 import android.os.Binder;

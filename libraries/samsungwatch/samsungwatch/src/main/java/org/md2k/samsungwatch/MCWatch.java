@@ -1,4 +1,4 @@
-package org.md2k.mcerebrum.library.samsungwatch;
+package org.md2k.samsungwatch;
 
 import android.content.ComponentName;
 import android.content.Context;

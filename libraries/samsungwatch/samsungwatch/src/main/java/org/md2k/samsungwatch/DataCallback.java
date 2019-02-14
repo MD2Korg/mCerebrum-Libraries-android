@@ -1,4 +1,6 @@
-package org.md2k.mcerebrum.library.samsungwatch;
+package org.md2k.samsungwatch;
+
+import java.util.ArrayList;
 
 /*
  * Copyright (c) 2016, The University of Memphis, MD2K Center
@@ -26,7 +28,6 @@ package org.md2k.mcerebrum.library.samsungwatch;
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-public interface ConnectionCallback {
-    void onSuccess();
-    void onError(String status);
+public interface DataCallback {
+    void onReceived(SensorType sensorType, ArrayList<Object> data);
 }
