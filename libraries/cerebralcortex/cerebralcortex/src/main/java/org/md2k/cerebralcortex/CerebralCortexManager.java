@@ -28,6 +28,7 @@ package org.md2k.cerebralcortex;
 
 import android.content.Context;
 
+import com.blankj.utilcode.util.ZipUtils;
 import com.orhanobut.hawk.Hawk;
 
 import org.md2k.cerebralcortex.cerebralcortexwebapi.CCWebAPICalls;
@@ -37,6 +38,7 @@ import org.md2k.cerebralcortex.cerebralcortexwebapi.models.MinioObjectStats;
 import org.md2k.cerebralcortex.cerebralcortexwebapi.utils.ApiUtils;
 import org.md2k.cerebralcortex.exception.MCExceptionConfigNotFound;
 import org.md2k.cerebralcortex.exception.MCExceptionInternetConnection;
+import org.md2k.cerebralcortex.exception.MCExceptionInvalidConfig;
 import org.md2k.cerebralcortex.exception.MCExceptionInvalidLogin;
 import org.md2k.cerebralcortex.exception.MCExceptionNotLoggedIn;
 import org.md2k.cerebralcortex.exception.MCExceptionServerDown;
@@ -46,6 +48,7 @@ import org.md2k.mcerebrumapi.core.datakitapi.datasource.DataSourceResult;
 import org.md2k.mcerebrumapi.core.exception.MCException;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -168,7 +171,7 @@ public class CerebralCortexManager {
                     checkLoginStatus();
                     checkServerUp(ServerInfo.getServerAddress());
                     final String tempFileDir = context.getFilesDir().getAbsolutePath() + File.separator + "temp";
-                    String configFileDir = context.getFilesDir().getAbsolutePath() + File.separator + "config";
+                    final String configFileDir = context.getFilesDir().getAbsolutePath() + File.separator + "config";
                     File file = new File(tempFileDir);
                     file.mkdirs();
                     file = new File(configFileDir);
@@ -180,8 +183,16 @@ public class CerebralCortexManager {
                         public void onSuccess(Object obj) {
                             FileInfo fileInfo = (FileInfo) obj;
                             boolean res = ccWebAPICalls.downloadMinioObject(ServerInfo.getAccessToken(), "configuration", filename, tempFileDir, filename);
-                            if (!res) cerebralCortexCallback.onError(new MCExceptionConfigNotFound());
-                            // ZipUtils.unzipFile(tempFileDir+File.separator+fileInfo.getName(), configFileDir);
+                            if (!res) {
+                                cerebralCortexCallback.onError(new MCExceptionConfigNotFound());
+                                return;
+                            }
+                            try {
+                                ZipUtils.unzipFile(tempFileDir+File.separator+fileInfo.getName(), configFileDir);
+                            } catch (IOException e) {
+                                cerebralCortexCallback.onError(new MCExceptionInvalidConfig());
+                                return;
+                            }
                             ServerInfo.setFileName(fileInfo.getName());
                             ServerInfo.setFileLastModified(fileInfo.getLastModified());
                             cerebralCortexCallback.onSuccess(true);

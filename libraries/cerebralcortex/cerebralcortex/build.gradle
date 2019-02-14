@@ -43,7 +43,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
     implementation "com.orhanobut:hawk:2.0.1"
 //    implementation 'com.karumi:dexter:5.0.0'
-//    implementation 'com.blankj:utilcode:1.23.4'
+    implementation 'com.blankj:utilcode:1.23.4'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.2-alpha01'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.2-alpha01'
