@@ -35,66 +35,59 @@ class ServerInfo {
     private static final String ACCESS_TOKEN = "ACCESS_TOKEN";
     private static final String LOGGED_IN = "LOGGED_IN";
     private static final String FILE_NAME = "FILE_NAME";
-    private static final String FILE_SIZE = "FILE_SIZE";
     private static final String FILE_LAST_MODIFIED = "FILE_LAST_MODIFIED";
 
-    protected void setUserName(String userName) {
+    protected static void setUserName(String userName) {
         Hawk.put(USER_NAME, userName);
     }
-    public String getUserName(){
+    protected static String getUserName(){
         return Hawk.get(USER_NAME);
     }
 
-    public void setPassword(String password) {
+    protected static void setPassword(String password) {
         Hawk.put(PASSWORD, password);
     }
-    public String getPassword(){
+    protected static String getPassword(){
         return Hawk.get(PASSWORD);
     }
 
-    public void setServerAddress(String serverAddress) {
+    protected static void setServerAddress(String serverAddress) {
         Hawk.put(SERVER_ADDRESS, serverAddress);
     }
 
-    public void setAccessToken(String accessToken) {
+    protected static void setAccessToken(String accessToken) {
         Hawk.put(ACCESS_TOKEN,accessToken);
     }
 
-    public void setLoggedIn(boolean b) {
+    protected static void setLoggedIn(boolean b) {
         Hawk.put(LOGGED_IN,true);
     }
 
-    public boolean getLoggedIn() {
+    protected static boolean getLoggedIn() {
         if(Hawk.contains(LOGGED_IN)){
             return Hawk.get(LOGGED_IN);
         }else return false;
     }
 
-    public String getServerAddress() {
+    protected static String getServerAddress() {
         return Hawk.get(SERVER_ADDRESS);
     }
-    public String getAccessToken(){
+    protected static String getAccessToken(){
         return Hawk.get(ACCESS_TOKEN);
     }
 
-    public void setFileName(String name) {
+    protected static void setFileName(String name) {
         Hawk.put(FILE_NAME, name);
     }
 
-    public void setFileSize(String size) {
-        Hawk.put(FILE_SIZE, size);
-    }
 
-    public void setFileLastModified(String lastModified) {
+    protected static void setFileLastModified(String lastModified) {
         Hawk.put(FILE_LAST_MODIFIED,lastModified);
     }
-    public String getFileName(){
+    protected static String getFileName(){
         return Hawk.get(FILE_NAME);
     }
-    public String getFileSize(){
-        return Hawk.get(FILE_SIZE);
-    }
-    public String getFileLastModified(){
+    protected static String getFileLastModified(){
         return Hawk.get(FILE_LAST_MODIFIED);
     }
 }

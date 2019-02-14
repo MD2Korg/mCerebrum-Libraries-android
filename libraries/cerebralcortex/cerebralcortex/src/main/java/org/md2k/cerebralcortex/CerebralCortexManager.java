@@ -27,7 +27,6 @@ package org.md2k.cerebralcortex;
  */
 
 import android.content.Context;
-import android.os.Looper;
 
 import com.orhanobut.hawk.Hawk;
 
@@ -41,6 +40,9 @@ import org.md2k.cerebralcortex.exception.MCExceptionInternetConnection;
 import org.md2k.cerebralcortex.exception.MCExceptionInvalidLogin;
 import org.md2k.cerebralcortex.exception.MCExceptionNotLoggedIn;
 import org.md2k.cerebralcortex.exception.MCExceptionServerDown;
+import org.md2k.mcerebrumapi.core.data.MCData;
+import org.md2k.mcerebrumapi.core.datakitapi.datasource.DataSource;
+import org.md2k.mcerebrumapi.core.exception.MCException;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -48,164 +50,191 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CerebralCortexManager {
-
     private Context context;
     private static CerebralCortexManager instance;
-    private ServerInfo serverInfo;
-    private CCWebAPICalls ccWebAPICalls;
-    public static CerebralCortexManager getInstance(Context context){
-        if(instance==null)
+
+    public static CerebralCortexManager getInstance(Context context) {
+        if (instance == null)
             instance = new CerebralCortexManager(context);
         return instance;
     }
-    private CerebralCortexManager(Context context){
+
+    private CerebralCortexManager(Context context) {
         this.context = context;
         Hawk.init(context).build();
-        serverInfo=new ServerInfo();
-    }
-    private void loginExecute(final String serverAddress, final String userName, final String password, final CerebralCortexCallback cerebralCortexCallback){
-        try {
-        checkInternetConnection();
-        checkServerUp(serverAddress);
-        CerebralCortexWebApi ccService=ApiUtils.getCCService(serverAddress);
-        ccWebAPICalls = new CCWebAPICalls(ccService);
-
-        AuthResponse authResponse = ccWebAPICalls.authenticateUser(userName, password);
-        if(authResponse==null)
-            cerebralCortexCallback.onError(new MCExceptionInvalidLogin());
-        else {
-            serverInfo.setUserName(userName);
-            serverInfo.setPassword(password);
-            serverInfo.setServerAddress(serverAddress);
-            serverInfo.setAccessToken(authResponse.getAccessToken());
-            serverInfo.setLoggedIn(true);
-            cerebralCortexCallback.onSuccess(true);
-        }
-    } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
-        cerebralCortexCallback.onError(mcExceptionInternetConnection);
-    } catch (MCExceptionServerDown mcExceptionServerDown) {
-        cerebralCortexCallback.onError(mcExceptionServerDown);
     }
 
-    }
 
     public void login(final String serverAddress, final String userName, final String password, final CerebralCortexCallback cerebralCortexCallback) {
-        if(Looper.myLooper()==Looper.getMainLooper()){
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    loginExecute(serverAddress, userName, password, cerebralCortexCallback);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    checkInternetConnection();
+                    checkServerUp(serverAddress);
+                    CerebralCortexWebApi ccService = ApiUtils.getCCService(serverAddress);
+                    CCWebAPICalls ccWebAPICalls = new CCWebAPICalls(ccService);
+                    AuthResponse authResponse = ccWebAPICalls.authenticateUser(userName, password);
+                    if (authResponse == null) throw new MCExceptionInvalidLogin();
+                    ServerInfo.setUserName(userName);
+                    ServerInfo.setPassword(password);
+                    ServerInfo.setServerAddress(serverAddress);
+                    ServerInfo.setAccessToken(authResponse.getAccessToken());
+                    ServerInfo.setLoggedIn(true);
+                    cerebralCortexCallback.onSuccess(true);
+                } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
+                    cerebralCortexCallback.onError(mcExceptionInternetConnection);
+                } catch (MCExceptionServerDown mcExceptionServerDown) {
+                    cerebralCortexCallback.onError(mcExceptionServerDown);
+                } catch (MCExceptionInvalidLogin mcExceptionInvalidLogin) {
+                    cerebralCortexCallback.onError(mcExceptionInvalidLogin);
                 }
-            }).start();
+            }
+        }).start();
 
-        }else{
-            loginExecute(serverAddress, userName, password, cerebralCortexCallback);
-        }
     }
 
     public void logout() {
-        serverInfo.setLoggedIn(false);
+        ServerInfo.setLoggedIn(false);
     }
-
 
     public boolean isLoggedIn() {
-        return serverInfo.getLoggedIn();
+        return ServerInfo.getLoggedIn();
     }
 
-    public ArrayList<FileInfo> getConfigurationFiles() throws MCExceptionInternetConnection, MCExceptionNotLoggedIn, MCExceptionServerDown {
-        checkInternetConnection();
-        checkLoginStatus();
-        checkServerUp(serverInfo.getServerAddress());
-        ArrayList<FileInfo> list = new ArrayList<>();
-        List<MinioObjectStats> objectList = ccWebAPICalls.getObjectsInBucket(serverInfo.getAccessToken(), "configuration");
-        if(objectList==null || objectList.size()==0)
-            objectList= ccWebAPICalls.getObjectsInBucket(getAccessTokenWithLogin(serverInfo.getServerAddress(), serverInfo.getUserName(), serverInfo.getPassword()), "configuration");
-        for(int i = 0; objectList!=null && i<objectList.size();i++) {
-            FileInfo f = new FileInfo();
-            f.setName(objectList.get(i).getObjectName());
-            f.setSize(objectList.get(i).getSize());
-            f.setLastModified(objectList.get(i).getLastModified());
-            list.add(f);
-        }
-        return list;
-    }
-    private FileInfo getConfigurationFile(String fileName) throws MCExceptionInternetConnection, MCExceptionNotLoggedIn, MCExceptionServerDown, MCExceptionConfigNotFound {
-        ArrayList<FileInfo> fileInfos = getConfigurationFiles();
-        for(int i=0;i<fileInfos.size();i++){
-            if(fileInfos.get(i).getName().equals(fileName)) return fileInfos.get(i);
-        }
-        throw new MCExceptionConfigNotFound();
-    }
-    private void downloadExecute(String fileName, CerebralCortexCallback cerebralCortexCallback){
-        try {
-//            Utils.init(context);
-            checkInternetConnection();
-            checkLoginStatus();
-            checkServerUp(serverInfo.getServerAddress());
-            FileInfo f = getConfigurationFile(fileName);
-            String tempFileDir = context.getFilesDir().getAbsolutePath()+File.separator+"temp";
-            String configFileDir = context.getFilesDir().getAbsolutePath()+File.separator+"config";
-            File file = new File(tempFileDir);
-            file.mkdirs();
-            file = new File(configFileDir);
-            file.mkdirs();
-            boolean res = ccWebAPICalls.downloadMinioObject(serverInfo.getAccessToken(), "configuration", fileName, tempFileDir, fileName);
-            if (!res)
-                res = ccWebAPICalls.downloadMinioObject(getAccessTokenWithLogin(serverInfo.getServerAddress(), serverInfo.getUserName(), serverInfo.getPassword()), "configuration", fileName, tempFileDir, fileName);
-            if (res) {
-//                ZipUtils.unzipFile(tempFileDir+File.separator+fileName, configFileDir);
-                serverInfo.setFileName(f.getName());
-                serverInfo.setFileSize(f.getSize());
-                serverInfo.setFileLastModified(f.getLastModified());
-                cerebralCortexCallback.onSuccess(tempFileDir+ File.separator+fileName);
+    public void getConfigurationFiles(final CerebralCortexCallback cerebralCortexCallback){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    checkInternetConnection();
+                    checkLoginStatus();
+                    checkServerUp(ServerInfo.getServerAddress());
+                    ArrayList<FileInfo> list = new ArrayList<>();
+                    CerebralCortexWebApi ccService = ApiUtils.getCCService(ServerInfo.getServerAddress());
+                    CCWebAPICalls ccWebAPICalls = new CCWebAPICalls(ccService);
+                    AuthResponse authResponse = ccWebAPICalls.authenticateUser(ServerInfo.getUserName(), ServerInfo.getUserName());
+                    if (authResponse == null) throw new MCExceptionInvalidLogin();
+                    List<MinioObjectStats> objectList = ccWebAPICalls.getObjectsInBucket(authResponse.getAccessToken(), "configuration");
+                    for (int i = 0; objectList != null && i < objectList.size(); i++) {
+                        FileInfo f = new FileInfo();
+                        f.setName(objectList.get(i).getObjectName());
+                        f.setSize(objectList.get(i).getSize());
+                        f.setLastModified(objectList.get(i).getLastModified());
+                        list.add(f);
+                    }
+                    cerebralCortexCallback.onSuccess(list);
+                } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
+                    cerebralCortexCallback.onError(mcExceptionInternetConnection);
+                } catch (MCExceptionServerDown mcExceptionServerDown) {
+                    cerebralCortexCallback.onError(mcExceptionServerDown);
+                } catch (MCExceptionInvalidLogin mcExceptionInvalidLogin) {
+                    cerebralCortexCallback.onError(mcExceptionInvalidLogin);
+                } catch (MCExceptionNotLoggedIn mcExceptionNotLoggedIn) {
+                    cerebralCortexCallback.onError(mcExceptionNotLoggedIn);
+                } catch (Exception e) {
+                    cerebralCortexCallback.onError(new MCException(e.getMessage()));
+                }
             }
-        } catch (MCExceptionServerDown mcExceptionServerDown) {
-            cerebralCortexCallback.onError(mcExceptionServerDown);
-        } catch (MCExceptionNotLoggedIn mcExceptionNotLoggedIn) {
-            cerebralCortexCallback.onError(mcExceptionNotLoggedIn);
-        } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
-            cerebralCortexCallback.onError(mcExceptionInternetConnection);
-        } catch (MCExceptionConfigNotFound mcExceptionConfigNotFound) {
-            cerebralCortexCallback.onError(mcExceptionConfigNotFound);
-        } /*catch (IOException e) {
-            cerebralCortexCallback.onError(new MCExceptionInvalidConfig());
-        }*/
+        }).start();
+
     }
-    public void downloadConfigurationFile(final String fileName, final CerebralCortexCallback cerebralCortexCallback) {
-        if(Looper.myLooper()==Looper.getMainLooper()){
+
+
+    private void getConfigurationFile(final String fileName, final CerebralCortexCallback cerebralCortexCallback) {
+        getConfigurationFiles(new CerebralCortexCallback() {
+            @Override
+            public void onSuccess(Object obj) {
+                ArrayList<FileInfo> fileInfos = (ArrayList<FileInfo>) obj;
+                for (int i = 0; i < fileInfos.size(); i++) {
+                    if (fileInfos.get(i).getName().equals(fileName)) cerebralCortexCallback.onSuccess(fileInfos.get(i));
+                }
+                cerebralCortexCallback.onError(new MCExceptionConfigNotFound());
+            }
+
+            @Override
+            public void onError(MCException exception) {
+                cerebralCortexCallback.onError(exception);
+            }
+        });
+
+    }
+
+    public void downloadConfigurationFile(final String filename, final CerebralCortexCallback cerebralCortexCallback) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    checkInternetConnection();
+                    checkLoginStatus();
+                    checkServerUp(ServerInfo.getServerAddress());
+                    final String tempFileDir = context.getFilesDir().getAbsolutePath() + File.separator + "temp";
+                    String configFileDir = context.getFilesDir().getAbsolutePath() + File.separator + "config";
+                    File file = new File(tempFileDir);
+                    file.mkdirs();
+                    file = new File(configFileDir);
+                    file.mkdirs();
+                    CerebralCortexWebApi ccService = ApiUtils.getCCService(ServerInfo.getServerAddress());
+                    final CCWebAPICalls ccWebAPICalls = new CCWebAPICalls(ccService);
+                    final AuthResponse authResponse = ccWebAPICalls.authenticateUser(ServerInfo.getUserName(), ServerInfo.getPassword());
+                    if (authResponse == null) throw new MCExceptionInvalidLogin();
+                    getConfigurationFile(filename, new CerebralCortexCallback() {
+                        @Override
+                        public void onSuccess(Object obj) {
+                            FileInfo fileInfo = (FileInfo) obj;
+                            boolean res = ccWebAPICalls.downloadMinioObject(authResponse.getAccessToken(), "configuration", filename, tempFileDir, filename);
+                            if (!res) cerebralCortexCallback.onError(new MCExceptionConfigNotFound());
+                            // ZipUtils.unzipFile(tempFileDir+File.separator+fileInfo.getName(), configFileDir);
+                            ServerInfo.setFileName(fileInfo.getName());
+                            ServerInfo.setFileLastModified(fileInfo.getLastModified());
+                            cerebralCortexCallback.onSuccess(true);
+                        }
+
+                        @Override
+                        public void onError(MCException exception) {
+                            cerebralCortexCallback.onError(exception);
+                        }
+                    });
+                } catch (MCExceptionServerDown mcExceptionServerDown) {
+                    cerebralCortexCallback.onError(mcExceptionServerDown);
+                } catch (MCExceptionNotLoggedIn mcExceptionNotLoggedIn) {
+                    cerebralCortexCallback.onError(mcExceptionNotLoggedIn);
+                } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
+                    cerebralCortexCallback.onError(mcExceptionInternetConnection);
+                } catch (MCExceptionInvalidLogin mcExceptionInvalidLogin) {
+                    cerebralCortexCallback.onError(mcExceptionInvalidLogin);
+                }
+            }
+        }).start();
+    }
+    public void hasConfigurationUpdate(final CerebralCortexCallback cerebralCortexCallback){
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    downloadExecute(fileName, cerebralCortexCallback);
+                    getConfigurationFile(ServerInfo.getFileName(), new CerebralCortexCallback() {
+                        @Override
+                        public void onSuccess(Object obj) {
+                            FileInfo fileInfo = (FileInfo) obj;
+                            if(!fileInfo.getLastModified().equals(ServerInfo.getFileLastModified()))
+                                cerebralCortexCallback.onSuccess(true);
+                            else cerebralCortexCallback.onSuccess(false);
+                        }
+
+                        @Override
+                        public void onError(MCException exception) {
+                            cerebralCortexCallback.onError(exception);
+                        }
+                    });
                 }
             }).start();
 
-        }else{
-            downloadExecute(fileName, cerebralCortexCallback);
-        }
-    }
-
-    public boolean hasConfigurationUpdateAvailable() throws MCExceptionInternetConnection, MCExceptionNotLoggedIn, MCExceptionServerDown, MCExceptionConfigNotFound {
-        checkInternetConnection();
-        checkLoginStatus();
-        checkServerUp(serverInfo.getServerAddress());
-        FileInfo f = getConfigurationFile(serverInfo.getFileName());
-        return !f.getLastModified().equals(serverInfo.getFileLastModified());
-    }
-    private String getAccessTokenWithLogin(String serverAddress, String userName, String password) throws MCExceptionNotLoggedIn {
-        CerebralCortexWebApi ccService=ApiUtils.getCCService(serverAddress);
-        ccWebAPICalls = new CCWebAPICalls(ccService);
-        AuthResponse authResponse = ccWebAPICalls.authenticateUser(userName, password);
-        if(authResponse==null) throw new MCExceptionNotLoggedIn();
-        serverInfo.setAccessToken(authResponse.getAccessToken());
-        return authResponse.getAccessToken();
     }
 
     private void checkInternetConnection() throws MCExceptionInternetConnection {
         try {
             InetAddress ipAddr = InetAddress.getByName("google.com");
             //You can replace it with your name
-            if(ipAddr.toString().equals("")){
+            if (ipAddr.toString().equals("")) {
                 throw new MCExceptionInternetConnection();
             }
         } catch (Exception e) {
@@ -213,15 +242,16 @@ public class CerebralCortexManager {
         }
 
     }
+
     private void checkServerUp(String serverName) throws MCExceptionServerDown {
         try {
 
-            String s=serverName;
-            s = s.replace("https://","");
-            s = s.replace("http://","");
+            String s = serverName;
+            s = s.replace("https://", "");
+            s = s.replace("http://", "");
             InetAddress ipAddr = InetAddress.getByName(s);
             //You can replace it with your name
-            if(ipAddr.toString().equals("")){
+            if (ipAddr.toString().equals("")) {
                 throw new MCExceptionServerDown();
             }
 
@@ -231,6 +261,30 @@ public class CerebralCortexManager {
     }
 
     private void checkLoginStatus() throws MCExceptionNotLoggedIn {
-        if(!isLoggedIn()) throw new MCExceptionNotLoggedIn();
+        if (!isLoggedIn()) throw new MCExceptionNotLoggedIn();
+    }
+
+    public void uploadData(DataSource dataSource, ArrayList<MCData> data, final CerebralCortexCallback cerebralCortexCallback){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    checkInternetConnection();
+                    checkLoginStatus();
+                    checkServerUp(ServerInfo.getServerAddress());
+                    //TODO: add data uploader
+                    cerebralCortexCallback.onSuccess(true);
+                } catch (MCExceptionInternetConnection mcExceptionInternetConnection) {
+                    cerebralCortexCallback.onError(mcExceptionInternetConnection);
+                } catch (MCExceptionServerDown mcExceptionServerDown) {
+                    cerebralCortexCallback.onError(mcExceptionServerDown);
+                } catch (MCExceptionNotLoggedIn mcExceptionNotLoggedIn) {
+                    cerebralCortexCallback.onError(mcExceptionNotLoggedIn);
+                } catch (Exception e) {
+                    cerebralCortexCallback.onError(new MCException(e.getMessage()));
+                }
+            }
+        }).start();
+
     }
 }

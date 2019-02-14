@@ -29,6 +29,6 @@ import org.md2k.mcerebrumapi.core.exception.MCException;
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 public interface CerebralCortexCallback {
-    void onSuccess(Object obj);
+    void  onSuccess(Object obj);
     void onError(MCException exception);
 }
